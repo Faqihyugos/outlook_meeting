@@ -244,6 +244,94 @@ app.get('/api/meetings', async (req, res) => {
   }
 });
 
+// POST /api/meetings - create a new meeting if the room is available
+app.post('/api/meetings', async (req, res) => {
+  const { title, description, startTime, endTime, location, organizerEmail, meetingType } = req.body;
+  if (!title || !startTime || !endTime || !location || !organizerEmail) {
+    return res.status(400).json({ message: 'Missing required fields' });
+  }
+
+  try {
+    const organizer = await prisma.user.findFirst({ where: { email: organizerEmail.toLowerCase() } });
+    if (!organizer) {
+      return res.status(404).json({ message: 'Organizer not found' });
+    }
+
+    const conflict = await prisma.meeting.findFirst({
+      where: {
+        location,
+        AND: [
+          { startTime: { lt: new Date(endTime) } },
+          { endTime: { gt: new Date(startTime) } }
+        ]
+      }
+    });
+
+    if (conflict) {
+      return res.status(409).json({ message: 'Room is fully booked for the selected time' });
+    }
+
+    const meeting = await prisma.meeting.create({
+      data: {
+        title,
+        description: description || null,
+        startTime: new Date(startTime),
+        endTime: new Date(endTime),
+        location,
+        organizerId: organizer.id,
+        meetingType: meetingType || 'team_meeting',
+        companyDomain: process.env.COMPANY_DOMAIN
+      }
+    });
+
+    res.json({ meeting });
+  } catch (error) {
+    console.error('Meeting creation error:', error);
+    res.status(500).json({ message: 'Failed to create meeting' });
+  }
+});
+
+// GET /api/rooms/:room/availability?start=YYYY-MM-DD&end=YYYY-MM-DD
+app.get('/api/rooms/:room/availability', async (req, res) => {
+  const { room } = req.params;
+  const { start, end } = req.query;
+  if (!start || !end) return res.status(400).json({ message: 'start and end are required' });
+
+  const startDate = new Date(start + 'T00:00:00Z');
+  const endDate = new Date(end + 'T23:59:59Z');
+
+  try {
+    const bookings = await prisma.meeting.findMany({
+      where: {
+        location: room,
+        startTime: { lt: endDate },
+        endTime: { gt: startDate }
+      },
+      select: { startTime: true, endTime: true }
+    });
+
+    const hoursPerDay = {};
+    bookings.forEach(b => {
+      const key = b.startTime.toISOString().slice(0, 10);
+      const duration = (b.endTime - b.startTime) / 3600000;
+      hoursPerDay[key] = (hoursPerDay[key] || 0) + duration;
+    });
+
+    const fullyBooked = [];
+    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+      const dayKey = d.toISOString().slice(0, 10);
+      if ((hoursPerDay[dayKey] || 0) >= 8) {
+        fullyBooked.push(dayKey);
+      }
+    }
+
+    res.json({ bookings, fullyBooked });
+  } catch (err) {
+    console.error('Room availability error:', err);
+    res.status(500).json({ message: 'Failed to check availability' });
+  }
+});
+
 // POST /api/attendance - update attendance status for logged in user
 app.post('/api/attendance', async (req, res) => {
   const { meetingId, status } = req.body;
