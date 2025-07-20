@@ -16,7 +16,9 @@ const requiredEnvVars = [
   'JWT_SECRET',
   'AZURE_TENANT_ID',
   'AZURE_CLIENT_ID',
-  'REDIRECT_URI'
+  'AZURE_CLIENT_SECRET',
+  'REDIRECT_URI',
+  'DATABASE_URL'
 ];
 
 requiredEnvVars.forEach(varName => {
@@ -239,6 +241,51 @@ app.get('/api/meetings', async (req, res) => {
     res.json({ meetings, meetingTypes });
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch meetings' });
+  }
+});
+
+// POST /api/attendance - update attendance status for logged in user
+app.post('/api/attendance', async (req, res) => {
+  const { meetingId, status } = req.body;
+  const authHeader = req.headers.authorization || '';
+  const token = authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ message: 'Missing token' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
+    if (!user) return res.status(401).json({ message: 'Invalid user' });
+
+    const domain = user.email.split('@')[1].toLowerCase();
+    if (domain !== process.env.COMPANY_DOMAIN) {
+      return res.status(401).json({ message: 'Unauthorized domain' });
+    }
+
+    const meeting = await prisma.meeting.findUnique({ where: { id: meetingId } });
+    if (!meeting) return res.status(404).json({ message: 'Meeting not found' });
+
+    await prisma.meetingAttendee.upsert({
+      where: {
+        meetingId_userId: {
+          meetingId,
+          userId: user.id
+        }
+      },
+      update: { attendanceStatus: status },
+      create: { meetingId, userId: user.id, attendanceStatus: status }
+    });
+
+    if (meeting.outlookEventId) {
+      await updateMeetingAttendance(meeting.outlookEventId, user.email, status);
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Attendance update error:', err);
+    res.status(500).json({ message: 'Failed to update attendance' });
   }
 });
 

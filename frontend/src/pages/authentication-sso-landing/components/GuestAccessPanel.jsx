@@ -40,7 +40,8 @@ const GuestAccessPanel = () => {
           type: selectedType !== 'all' ? selectedType : '',
           domain: window.location.hostname.split('.').slice(-2).join('.') // Example: company.com
         });
-        const res = await fetch(`${process.env.REACT_APP_API_URL}/meetings?${params.toString()}`);
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+        const res = await fetch(`${apiUrl}/api/meetings?${params.toString()}`);
         const data = await res.json();
         setFilteredMeetings(data.meetings || []);
         if (data.meetingTypes) {
@@ -101,7 +102,8 @@ const GuestAccessPanel = () => {
     }
     // Submit guest check-in to backend
     try {
-      const res = await fetch(`${process.env.REACT_APP_API_URL}/guest-checkin`, {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+      const res = await fetch(`${apiUrl}/api/guest-checkin`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
