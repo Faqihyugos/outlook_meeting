@@ -18,7 +18,7 @@ const SSOLoginPanel = () => {
   const [errors, setErrors] = useState({});
 
   // Company domain configuration
-  const COMPANY_DOMAIN = 'kpk.go.id';
+  const COMPANY_DOMAIN = import.meta.env.VITE_COMPANY_DOMAIN || 'kpk.go.id';
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 
   // Validate company email domain
@@ -68,7 +68,7 @@ const SSOLoginPanel = () => {
         },
         body: JSON.stringify({
           domain: COMPANY_DOMAIN,
-          redirectUrl: import.meta.env.VITE_API_URL  + '/auth/callback'
+          redirectUrl: `${API_URL}/auth/callback`
         })
       });
 
