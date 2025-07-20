@@ -1,0 +1,204 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Core System Colors */
+    --color-background: #faf9f8; /* warm off-white */
+    --color-foreground: #323130; /* rich charcoal */
+    --color-border: #e1dfdd; /* minimal border */
+    --color-input: #ffffff; /* pure white */
+    --color-ring: #0078d4; /* microsoft blue */
+    
+    /* Card Colors */
+    --color-card: #ffffff; /* pure white */
+    --color-card-foreground: #323130; /* rich charcoal */
+    --color-popover: #ffffff; /* pure white */
+    --color-popover-foreground: #323130; /* rich charcoal */
+    
+    /* Muted Colors */
+    --color-muted: #f3f2f1; /* light neutral */
+    --color-muted-foreground: #605e5c; /* warm neutral */
+    
+    /* Primary Colors */
+    --color-primary: #0078d4; /* microsoft blue */
+    --color-primary-foreground: #ffffff; /* white */
+    
+    /* Secondary Colors */
+    --color-secondary: #605e5c; /* warm neutral */
+    --color-secondary-foreground: #ffffff; /* white */
+    
+    /* Accent Colors */
+    --color-accent: #8764b8; /* refined purple */
+    --color-accent-foreground: #ffffff; /* white */
+    
+    /* State Colors */
+    --color-success: #107c10; /* microsoft green */
+    --color-success-foreground: #ffffff; /* white */
+    
+    --color-warning: #ff8c00; /* warm orange */
+    --color-warning-foreground: #ffffff; /* white */
+    
+    --color-error: #d13438; /* professional red */
+    --color-error-foreground: #ffffff; /* white */
+    
+    --color-destructive: #d13438; /* professional red */
+    --color-destructive-foreground: #ffffff; /* white */
+    
+    /* Shadow Variables */
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.12);
+    --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.15);
+    
+    /* Animation Variables */
+    --animation-duration-fast: 150ms;
+    --animation-duration-normal: 300ms;
+    --animation-easing: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  
+  /* Typography Base Styles */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+  
+  body, p, span, div, button, input, select, textarea {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-weight: 400;
+  }
+  
+  .font-mono, code, pre {
+    font-family: 'JetBrains Mono', 'Consolas', 'Monaco', monospace;
+    font-weight: 400;
+  }
+  
+  /* Custom Animation Classes */
+  .animate-hover-lift {
+    transition: transform var(--animation-duration-fast) var(--animation-easing),
+                box-shadow var(--animation-duration-fast) var(--animation-easing);
+  }
+  
+  .animate-hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+  
+  .animate-press {
+    transition: transform var(--animation-duration-fast) var(--animation-easing);
+  }
+  
+  .animate-press:active {
+    transform: scale(0.98);
+  }
+  
+  /* Smooth Height Transitions */
+  .animate-height {
+    transition: height var(--animation-duration-normal) var(--animation-easing);
+  }
+  
+  /* Focus Styles */
+  .focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2;
+  }
+}
+
+@layer components {
+  /* Card Component Styles */
+  .card-elevation {
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow var(--animation-duration-fast) var(--animation-easing);
+  }
+  
+  .card-elevation:hover {
+    box-shadow: var(--shadow-md);
+  }
+  
+  /* Navigation Styles */
+  .nav-item {
+    @apply flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-150;
+  }
+  
+  .nav-item:hover {
+    @apply bg-muted text-foreground;
+  }
+  
+  .nav-item.active {
+    @apply bg-primary text-primary-foreground;
+  }
+  
+  /* Button Variants */
+.btn-microsoft  {
+    @apply bg-primary text-primary-foreground focus-ring;
+    transition: background-color var(--animation-duration-fast) var(--animation-easing);
+  }
+  
+  /* Loading States */
+  .skeleton {
+    @apply animate-pulse bg-muted rounded;
+  }
+  
+  /* Responsive Grid */
+  .meeting-grid {
+    @apply grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3;
+  }
+}
+
+@layer utilities {
+  /* Custom Spacing */
+  .space-y-enterprise > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 1.5rem;
+  }
+  
+  /* Text Utilities */
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  /* Interaction States */
+  .interactive {
+    @apply cursor-pointer select-none;
+  }
+  
+  .interactive:hover {
+    @apply opacity-80;
+  }
+  
+  /* Microsoft-style Borders */
+  .border-subtle {
+    border-color: var(--color-border);
+  }
+  
+  /* Enterprise Shadows */
+  .shadow-enterprise {
+    box-shadow: var(--shadow-sm);
+  }
+  
+  .shadow-enterprise-hover {
+    box-shadow: var(--shadow-md);
+  }
+  
+  /* Reduced Motion Support */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-hover-lift,
+    .animate-press,
+    .animate-height,
+    .card-elevation,
+    .nav-item,
+    .btn-microsoft {
+      transition: none;
+    }
+  }
+}
