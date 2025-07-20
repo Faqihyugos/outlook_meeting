@@ -1,0 +1,12 @@
+{
+  "name": "outlook-meeting",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev:backend": "npm run dev --workspace backend",
+    "dev:frontend": "npm start --workspace frontend"
+  }
+}
